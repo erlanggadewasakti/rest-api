@@ -1,6 +1,6 @@
-# 🚀 Panduan Deployment Mahasiswa RESTful API di aaPanel (MySQL + Prisma 7)
+# 🚀 Panduan Deployment Mahasiswa RESTful API di aaPanel (PostgreSQL + Prisma 7)
 
-Panduan lengkap ini menjelaskan langkah demi langkah cara men-deploy aplikasi NestJS RESTful API dengan **Prisma 7 ORM**, **Driver Adapter MariaDB/MySQL**, dan database **MySQL** bawaan di server **aaPanel**.
+Panduan lengkap ini menjelaskan langkah demi langkah cara men-deploy aplikasi NestJS RESTful API dengan **Prisma 7 ORM**, **Driver Adapter PostgreSQL (`@prisma/adapter-pg`)**, dan database **PostgreSQL** di server **aaPanel**.
 
 ---
 
@@ -8,32 +8,32 @@ Panduan lengkap ini menjelaskan langkah demi langkah cara men-deploy aplikasi Ne
 
 Pastikan modul/fitur berikut sudah terinstal di App Store aaPanel:
 1. **Nginx** (Web Server & Reverse Proxy)
-2. **MySQL** (atau MariaDB versi 10.x / MySQL 8.x)
-3. **Node.js Version Manager** (Pilih Node.js LTS v20.x atau v22.x)
-4. **PM2 Manager** (Opsional, bawaan Node project manager aaPanel)
+2. **PostgreSQL Manager / PostgreSQL** (Database Server PostgreSQL)
+3. **Node.js Version Manager** (Pilih Node.js LTS v20.x atau v22.x / v24.x)
+4. **PM2 Manager** (Opsional)
 
 ---
 
-## 🛠️ Langkah 1: Buat Database MySQL di aaPanel
+## 🛠️ Langkah 1: Setup PostgreSQL di aaPanel & Buat Database
 
-1. Buka dashboard aaPanel lalu klik menu **Databases** di sidebar kiri.
-2. Klik tombol **Add Database**:
-   - **DBName**: `db_mahasiswa`
-   - **DBUser**: `user_mahasiswa` (atau sesuaikan)
-   - **Password**: Buat password yang kuat (contoh: `PasswordMySQL123!`)
-   - **Access Permission**: `Localhost` (127.0.0.1)
-3. Klik **Submit**.
-
-Catatan format `DATABASE_URL` MySQL Anda:
-```env
-mysql://user_mahasiswa:PasswordMySQL123!@localhost:3306/db_mahasiswa
-```
+1. Buka dashboard aaPanel lalu masuk ke menu **App Store**.
+2. Cari dan install **PostgreSQL Manager** (atau PostgreSQL).
+3. Setelah terinstal, buka **PostgreSQL Manager**:
+   - Atur password user `postgres` (contoh: `PasswordPostgres123!`).
+   - Buat database baru:
+     - **Database Name**: `rest_api`
+     - **Username**: `postgres` (atau buat user baru)
+     - **Password**: `PasswordPostgres123!`
+4. Format `DATABASE_URL` Anda menjadi:
+   ```env
+   postgresql://postgres:PasswordPostgres123!@127.0.0.1:5432/rest_api?schema=public
+   ```
 
 ---
 
 ## 📂 Langkah 2: Upload Kode Proyek ke Server
 
-### Menggunakan Git Clone di Terminal aaPanel (Direkomendasikan):
+Buka menu **Terminal** di aaPanel:
 ```bash
 cd /www/wwwroot
 git clone <URL_REPOSITORY_ANDA> rest-api
@@ -44,14 +44,14 @@ cd rest-api
 
 ## ⚙️ Langkah 3: Konfigurasi Environment (`.env`)
 
-1. Di dalam direktori proyek `/www/wwwroot/rest-api`, salin atau buat file `.env`:
+1. Di dalam direktori `/www/wwwroot/rest-api`, buat/edit file `.env`:
    ```bash
    cp .env.example .env
    ```
-2. Sesuaikan isinya dengan kredensial database MySQL Anda:
+2. Sesuaikan isinya:
    ```env
-   # Database MySQL aaPanel
-   DATABASE_URL="mysql://user_mahasiswa:PasswordMySQL123!@localhost:3306/db_mahasiswa"
+   # Database PostgreSQL aaPanel
+   DATABASE_URL="postgresql://postgres:PasswordPostgres123!@127.0.0.1:5432/rest_api?schema=public"
 
    # Konfigurasi Port
    PORT=3000
@@ -66,12 +66,13 @@ cd rest-api
 
 ## 📦 Langkah 4: Install Dependencies & Migrasi Database
 
-Buka Terminal di aaPanel (pada direktori proyek `/www/wwwroot/rest-api`):
+Di **Terminal** aaPanel pada direktori `/www/wwwroot/rest-api`:
 
 1. **Install dependencies**:
    ```bash
    npm install
-   # atau: bun install
+   # atau jika ada bun:
+   # bun install
    ```
 
 2. **Generate Prisma 7 Client**:
@@ -79,7 +80,7 @@ Buka Terminal di aaPanel (pada direktori proyek `/www/wwwroot/rest-api`):
    npx prisma generate
    ```
 
-3. **Sinkronisasi Skema ke Database MySQL (Migrate / Push)**:
+3. **Sinkronisasi Skema ke Database PostgreSQL (Migrate / Push)**:
    ```bash
    npx prisma db push
    ```
@@ -89,57 +90,59 @@ Buka Terminal di aaPanel (pada direktori proyek `/www/wwwroot/rest-api`):
    npx prisma db seed
    ```
 
-5. **Build Aplikasi untuk Produksi**:
+5. **Build Aplikasi**:
    ```bash
    npm run build
    ```
-   *File build akan dihasilkan di folder `dist/`.*
 
 ---
 
 ## 🌐 Langkah 5: Setup Node Project di aaPanel
 
-1. Buka menu **Website** -> tab **Node project** di aaPanel.
-2. Klik **Add Node project**.
-3. Isi konfigurasi berikut:
-   - **Project Name**: `mahasiswa-api`
-   - **Run Opt**: `Node` (atau `npm`)
-   - **Project Path**: `/www/wwwroot/rest-api`
-   - **Run File / Run Script**: `dist/main.js` (atau Start Script: `start:prod`)
-   - **Project Port**: `3000`
-   - **Node.js Version**: Pilih `Node.js 20.x` atau `22.x`
-4. Klik **Submit**.
-5. Pastikan status project menunjukkan **Running** (hijau).
+Buat 2 project di tab **Website** -> **Node project**:
+
+### 1. Main API Service (Port 3000)
+- **Project Name**: `rest_api`
+- **Run Opt**: `start:prod [node dist/main.js]` *(atau Run File: `dist/main.js`)*
+- **Project Path**: `/www/wwwroot/rest-api`
+- **Project Port**: `3000`
+- **Node.js Version**: `v20.x` / `v22.x` / `v24.x`
+- **Boot**: Centang
+
+### 2. Prisma Studio Service (Port 5555 - Bahan Ajar)
+- **Project Name**: `rest_api_studio`
+- **Run Opt**: `studio [prisma studio --port 5555 --browser none]`
+- **Project Path**: `/www/wwwroot/rest-api`
+- **Project Port**: `5555`
+- **Node.js Version**: `v20.x` / `v22.x` / `v24.x`
 
 ---
 
 ## 🔒 Langkah 6: Konfigurasi Domain & Reverse Proxy Nginx
 
-Agar API bisa diakses melalui domain Anda (misal `api.domainanda.com`):
-
-1. Buka tab **Website** -> **Node project** -> klik **Settings** pada project `mahasiswa-api`.
-2. Pada tab **Domain manager**, tambahkan nama domain Anda (misal: `api.domainanda.com`).
-3. Pada tab **SSL**, pasang sertifikat SSL gratis dari **Let's Encrypt** lalu klik **Save**.
-4. Nginx aaPanel akan otomatis mengatur Reverse Proxy dari port 80/443 ke port internal `3000`.
+1. **Untuk API** (`api.domainanda.com` -> Port 3000):
+   - Pasang domain di Node project `rest_api` dan aktifkan SSL Let's Encrypt.
+2. **Untuk Prisma Studio** (`api-studio.domainanda.com` -> Port 5555):
+   - Pasang domain di Node project `rest_api_studio` dan aktifkan SSL Let's Encrypt.
+   - Pastikan Reverse Proxy mengarah ke `http://127.0.0.1:5555` dengan WebSocket header:
+     ```nginx
+     location / {
+         proxy_pass http://127.0.0.1:5555;
+         proxy_set_header Host $host;
+         proxy_set_header X-Real-IP $remote_addr;
+         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+         proxy_http_version 1.1;
+         proxy_set_header Upgrade $http_upgrade;
+         proxy_set_header Connection "upgrade";
+     }
+     ```
 
 ---
 
-## 🧪 Langkah 7: Pengujian API & Swagger di Server
+## 🧪 Langkah 7: Akses & Verifikasi
 
-Setelah berhasil di-deploy, Anda dapat mengakses:
-- **Status API**: `https://api.domainanda.com/`
 - **Swagger Documentation**: `https://api.domainanda.com/docs`
+- **Prisma Studio**: `https://api-studio.domainanda.com/` *(seluruh tabel `users` & `mahasiswa` langsung muncul tanpa error)*
 - **Login Dummy**:
-  - URL: `POST https://api.domainanda.com/auth/login`
   - Username: `admin`
   - Password: `rahasiadong123`
-
----
-
-## 💡 Menjalankan Prisma Studio di Server (Bahan Ajar)
-
-Jika ingin menampilkan Prisma Studio saat mengajar secara remote:
-```bash
-npx prisma studio --port 5555 --hostname 0.0.0.0
-```
-> **Catatan Keamanan**: Buka Port `5555` di menu **Security** firewall aaPanel jika ingin diakses langsung dari IP server `http://IP-SERVER:5555`. Tutup kembali port tersebut setelah sesi kelas selesai untuk menjaga keamanan database.

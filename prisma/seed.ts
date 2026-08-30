@@ -1,15 +1,16 @@
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import 'dotenv/config';
 
 const connectionString =
-  process.env.DATABASE_URL || 'mysql://root:root@localhost:3306/db_mahasiswa';
-const adapter = new PrismaMariaDb(connectionString);
+  process.env.DATABASE_URL ||
+  'postgresql://postgres:postgres@localhost:5432/rest_api?schema=public';
+const adapter = new PrismaPg(connectionString);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Starting database seeding (MySQL - Prisma 7)...');
+  console.log('🌱 Starting database seeding (PostgreSQL - Prisma 7)...');
 
   // 1. Seed Dummy Admin User
   const defaultPassword = 'rahasiadong123';
