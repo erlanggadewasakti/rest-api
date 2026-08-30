@@ -38,14 +38,18 @@ async function bootstrap() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
         name: 'Authorization',
-        description: 'Masukkan access token JWT hasil dari endpoint /auth/login',
+        description:
+          'Masukkan access token JWT hasil dari endpoint /auth/login',
         in: 'header',
       },
       'bearer',
     )
     .addTag('Public', 'Endpoint umum yang dapat diakses tanpa autentikasi JWT')
     .addTag('Auth', 'Endpoint otentikasi login & data profil pengguna')
-    .addTag('Mahasiswa', 'Endpoint RESTful CRUD data mahasiswa (Protected by JWT)')
+    .addTag(
+      'Mahasiswa',
+      'Endpoint RESTful CRUD data mahasiswa (Protected by JWT)',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
@@ -61,7 +65,10 @@ async function bootstrap() {
 
   console.log(`🚀 Aplikasi berjalan pada: http://localhost:${port}`);
   console.log(`📚 Dokumentasi Swagger:    http://localhost:${port}/docs`);
-  console.log(`🗄️  Prisma Studio:         http://localhost:${process.env.STUDIO_PORT || 5555}`);
+  console.log(`🎛️  AdminJS Dashboard:     http://localhost:${port}/admin`);
+  console.log(
+    `🗄️  Prisma Studio:         http://localhost:${process.env.STUDIO_PORT || 5555}`,
+  );
 }
 
 await bootstrap();
