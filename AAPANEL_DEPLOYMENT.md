@@ -1,54 +1,44 @@
-# 🚀 Panduan Deployment Mahasiswa RESTful API di aaPanel (Prisma 7 Ready)
+# 🚀 Panduan Deployment Mahasiswa RESTful API di aaPanel (MySQL + Prisma 7)
 
-Panduan lengkap ini menjelaskan langkah demi langkah cara men-deploy aplikasi NestJS RESTful API dengan **Prisma 7 ORM**, **Driver Adapter MariaDB/MySQL**, dan database MySQL di server **aaPanel**.
+Panduan lengkap ini menjelaskan langkah demi langkah cara men-deploy aplikasi NestJS RESTful API dengan **Prisma 7 ORM**, **Driver Adapter MariaDB/MySQL**, dan database **MySQL** bawaan di server **aaPanel**.
 
 ---
 
 ## 📋 Prasyarat di aaPanel
 
 Pastikan modul/fitur berikut sudah terinstal di App Store aaPanel:
-1. **Nginx** (atau Apache / OpenLiteSpeed)
+1. **Nginx** (Web Server & Reverse Proxy)
 2. **MySQL** (atau MariaDB versi 10.x / MySQL 8.x)
-3. **Node.js Version Manager** (pilih Node.js LTS v20.x atau v22.x)
-4. **PM2 Manager** (opsional jika menggunakan Node project manager bawaan aaPanel)
+3. **Node.js Version Manager** (Pilih Node.js LTS v20.x atau v22.x)
+4. **PM2 Manager** (Opsional, bawaan Node project manager aaPanel)
 
 ---
 
 ## 🛠️ Langkah 1: Buat Database MySQL di aaPanel
 
 1. Buka dashboard aaPanel lalu klik menu **Databases** di sidebar kiri.
-2. Klik tombol **Add Database**.
-3. Masukkan detail database:
+2. Klik tombol **Add Database**:
    - **DBName**: `db_mahasiswa`
    - **DBUser**: `user_mahasiswa` (atau sesuaikan)
-   - **Password**: Buat password yang kuat (contoh: `PasswordDB123!`)
-   - **Access Permission**: `Localhost` (atau `Everyone` jika diakses dari remote IP)
-4. Klik **Submit**.
+   - **Password**: Buat password yang kuat (contoh: `PasswordMySQL123!`)
+   - **Access Permission**: `Localhost` (127.0.0.1)
+3. Klik **Submit**.
 
-Catatan format `DATABASE_URL` Anda akan menjadi:
+Catatan format `DATABASE_URL` MySQL Anda:
 ```env
-mysql://user_mahasiswa:PasswordDB123!@localhost:3306/db_mahasiswa
+mysql://user_mahasiswa:PasswordMySQL123!@localhost:3306/db_mahasiswa
 ```
 
 ---
 
 ## 📂 Langkah 2: Upload Kode Proyek ke Server
 
-Ada 2 cara yang dapat dipilih:
-
-### Opsi A: Menggunakan Git Clone (Direkomendasikan)
-1. Buka menu **Terminal** di aaPanel.
-2. Masuk ke direktori web:
-   ```bash
-   cd /www/wwwroot
-   git clone <URL_REPOSITORY_ANDA> rest-api
-   cd rest-api
-   ```
-
-### Opsi B: Menggunakan aaPanel File Manager
-1. Kompres proyek Anda menjadi file `.zip` (kecuali folder `node_modules` dan `dist`).
-2. Masuk ke menu **Files** di aaPanel, navigasi ke `/www/wwwroot/`.
-3. Upload file `.zip` lalu **Extract**.
+### Menggunakan Git Clone di Terminal aaPanel (Direkomendasikan):
+```bash
+cd /www/wwwroot
+git clone <URL_REPOSITORY_ANDA> rest-api
+cd rest-api
+```
 
 ---
 
@@ -58,12 +48,12 @@ Ada 2 cara yang dapat dipilih:
    ```bash
    cp .env.example .env
    ```
-2. Sesuaikan isinya:
+2. Sesuaikan isinya dengan kredensial database MySQL Anda:
    ```env
    # Database MySQL aaPanel
-   DATABASE_URL="mysql://user_mahasiswa:PasswordDB123!@localhost:3306/db_mahasiswa"
+   DATABASE_URL="mysql://user_mahasiswa:PasswordMySQL123!@localhost:3306/db_mahasiswa"
 
-   # Konfigurasi Aplikasi
+   # Konfigurasi Port
    PORT=3000
    STUDIO_PORT=5555
 
@@ -81,8 +71,7 @@ Buka Terminal di aaPanel (pada direktori proyek `/www/wwwroot/rest-api`):
 1. **Install dependencies**:
    ```bash
    npm install
-   # atau jika server memiliki bun:
-   # bun install
+   # atau: bun install
    ```
 
 2. **Generate Prisma 7 Client**:
@@ -90,7 +79,7 @@ Buka Terminal di aaPanel (pada direktori proyek `/www/wwwroot/rest-api`):
    npx prisma generate
    ```
 
-3. **Sinkronisasi Skema ke Database (Migrate / Push)**:
+3. **Sinkronisasi Skema ke Database MySQL (Migrate / Push)**:
    ```bash
    npx prisma db push
    ```
@@ -120,7 +109,7 @@ Buka Terminal di aaPanel (pada direktori proyek `/www/wwwroot/rest-api`):
    - **Project Port**: `3000`
    - **Node.js Version**: Pilih `Node.js 20.x` atau `22.x`
 4. Klik **Submit**.
-5. Pastikan status project menunjukkan **Running**.
+5. Pastikan status project menunjukkan **Running** (hijau).
 
 ---
 
@@ -147,7 +136,7 @@ Setelah berhasil di-deploy, Anda dapat mengakses:
 
 ---
 
-## 💡 Menjalankan Prisma Studio di Server (Opsional untuk Bahan Ajar)
+## 💡 Menjalankan Prisma Studio di Server (Bahan Ajar)
 
 Jika ingin menampilkan Prisma Studio saat mengajar secara remote:
 ```bash

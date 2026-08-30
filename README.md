@@ -1,21 +1,21 @@
-# 🎓 Mahasiswa RESTful API (NestJS + Prisma 7 ORM + JWT + Swagger)
+# 🎓 Mahasiswa RESTful API (NestJS + Prisma 7 ORM MySQL + JWT + Swagger)
 
-RESTful API data mahasiswa yang dibangun menggunakan **NestJS**, **Prisma 7 ORM (dengan Driver Adapter MariaDB/MySQL)**, **JWT Authentication**, dan dokumentasi interaktif **Swagger UI**. Dilengkapi fitur auto-run **Prisma Studio** untuk keperluan demonstrasi bahan ajar langsung, serta siap di-deploy ke **aaPanel**.
+RESTful API data mahasiswa yang dibangun menggunakan **NestJS**, **Prisma 7 ORM (MySQL / MariaDB)**, **JWT Authentication**, dan dokumentasi interaktif **Swagger UI**. Dilengkapi fitur auto-run **Prisma Studio** untuk keperluan demonstrasi bahan ajar langsung, serta siap di-deploy ke **aaPanel**.
 
 ---
 
 ## 🌟 Fitur Utama
 
-- **Prisma 7 ORM Architecture**:
+- **Prisma 7 ORM (MySQL Only)**:
   - Konfigurasi terpusat di `prisma.config.ts`.
-  - Menggunakan JavaScript Driver Adapter `@prisma/adapter-mariadb` & `mariadb` untuk performa andal dan fleksibel.
+  - Menggunakan JavaScript Driver Adapter `@prisma/adapter-mariadb` & `mariadb` yang dioptimalkan untuk MySQL/MariaDB.
   - Model data `User` dan `Mahasiswa` dengan migrasi & seeding otomatis.
 - **RESTful CRUD**: Endpoint lengkap `GET`, `GET /:id`, `POST`, `PUT /:id` (full update), dan `DELETE /:id`.
 - **Autentikasi JWT**: Endpoint `POST /auth/login` menghasilkan Bearer Token dengan enkripsi `bcryptjs`.
 - **Public & Protected Endpoints**: Mendukung rute publik (tanpa JWT) dan rute terlindungi (membutuhkan JWT).
 - **Swagger Documentation**: Dokumentasi interaktif lengkap di `/docs` dengan fitur Authorize JWT.
 - **Simultaneous Dev Run**: Menjalankan NestJS API (port 3000) dan Prisma Studio (port 5555) secara bersamaan dalam 1 perintah.
-- **aaPanel Ready**: Konfigurasi `ecosystem.config.cjs` (PM2) dan panduan deployment lengkap [AAPANEL_DEPLOYMENT.md](AAPANEL_DEPLOYMENT.md).
+- **aaPanel Ready**: Konfigurasi `ecosystem.config.cjs` (PM2) dan panduan deployment MySQL lengkap di [AAPANEL_DEPLOYMENT.md](AAPANEL_DEPLOYMENT.md).
 
 ---
 
@@ -33,7 +33,7 @@ Setelah menjalankan seeding database, Anda dapat login menggunakan:
 ```bash
 cp .env.example .env
 ```
-Sesuaikan konfigurasi database MySQL pada file `.env`:
+Konfigurasi database MySQL pada file `.env`:
 ```env
 DATABASE_URL="mysql://root:root@localhost:3306/db_mahasiswa"
 PORT=3000
@@ -41,12 +41,12 @@ STUDIO_PORT=5555
 JWT_SECRET="rahasiadong123_super_secret_jwt_key_2026"
 ```
 
-### 2. Generate Prisma 7 Client & Migrasi Database
+### 2. Generate Prisma 7 Client & Sinkronisasi Database MySQL
 ```bash
 # Generate Prisma 7 client
 bun run prisma:generate
 
-# Push schema ke database
+# Push schema ke database MySQL
 bun run prisma:push
 
 # Isi data dummy (admin & sample mahasiswa)
