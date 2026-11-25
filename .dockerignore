@@ -1,0 +1,39 @@
+# Git & documentation
+.git
+.gitignore
+README.md
+
+# Dependencies & build output (rebuilt inside container)
+node_modules
+dist
+build
+coverage
+.nyc_output
+tsconfig.build.tsbuildinfo
+
+# Environment & secrets (never bake into image)
+.env
+.env.*
+!.env.example
+
+# Tests & local dev configs
+test
+**/*.spec.ts
+**/*.e2e-spec.ts
+vitest.config.ts
+vitest.config.e2e.ts
+oxlint.json
+.prettierrc
+
+# Logs, OS & IDE files
+logs
+*.log
+.DS_Store
+.idea
+.vscode
+.temp
+.tmp
+
+# Docker files
+Dockerfile
+.dockerignore

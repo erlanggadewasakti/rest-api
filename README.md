@@ -1,6 +1,6 @@
 # 🎓 Mahasiswa RESTful API (NestJS + Prisma 7 ORM PostgreSQL + JWT + Swagger)
 
-RESTful API data mahasiswa yang dibangun menggunakan **NestJS**, **Prisma 7 ORM (PostgreSQL)**, **JWT Authentication**, dan dokumentasi interaktif **Swagger UI**. Dilengkapi fitur auto-run **Prisma Studio** untuk keperluan demonstrasi bahan ajar langsung, serta siap di-deploy ke **aaPanel**.
+RESTful API data mahasiswa yang dibangun menggunakan **NestJS**, **Prisma 7 ORM (PostgreSQL)**, **JWT Authentication**, dan dokumentasi interaktif **Swagger UI**. Dilengkapi fitur auto-run **Prisma Studio** untuk keperluan demonstrasi bahan ajar langsung, **AdminJS Dashboard** (`/admin`), serta siap di-deploy menggunakan **Docker**.
 
 ---
 
@@ -15,7 +15,7 @@ RESTful API data mahasiswa yang dibangun menggunakan **NestJS**, **Prisma 7 ORM 
 - **Public & Protected Endpoints**: Mendukung rute publik (tanpa JWT) dan rute terlindungi (membutuhkan JWT).
 - **Swagger Documentation**: Dokumentasi interaktif lengkap di `/docs` dengan fitur Authorize JWT.
 - **Simultaneous Dev Run**: Menjalankan NestJS API (port 3000) dan Prisma Studio (port 5555) secara bersamaan dalam 1 perintah.
-- **aaPanel Ready**: Konfigurasi `ecosystem.config.cjs` (PM2) dan panduan deployment PostgreSQL lengkap di [AAPANEL_DEPLOYMENT.md](AAPANEL_DEPLOYMENT.md).
+- **Docker Ready**: Dilengkapi multi-stage [Dockerfile](Dockerfile) untuk deployment produksi dengan PostgreSQL eksternal.
 
 ---
 
@@ -106,9 +106,19 @@ Perintah di atas akan menjalankan secara bersamaan:
 
 ---
 
-## 🚢 Deployment ke aaPanel
+## 🚢 Deployment dengan Docker
 
-Silakan ikuti panduan lengkap di [AAPANEL_DEPLOYMENT.md](AAPANEL_DEPLOYMENT.md) untuk langkah-langkah:
-1. Setup PostgreSQL di aaPanel
-2. Konfigurasi Node.js project manager & PM2
-3. Setup domain, Nginx reverse proxy, dan SSL Let's Encrypt.
+Pastikan database PostgreSQL eksternal dan file `.env` sudah siap, lalu build dan jalankan container:
+
+```bash
+# 1. Build production API image
+docker build -t rest-api .
+
+# 2. (Opsional) Jalankan migrasi & seed database via target migrator
+docker build --target migrator -t rest-api-migrator .
+docker run --rm --env-file .env rest-api-migrator
+docker run --rm --env-file .env rest-api-migrator bunx prisma db seed
+
+# 3. Jalankan container API (port 3000)
+docker run -d --name rest-api -p 3000:3000 --env-file .env --restart unless-stopped rest-api
+```
